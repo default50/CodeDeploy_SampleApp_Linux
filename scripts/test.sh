@@ -4,4 +4,4 @@ echo "test"
 env
 SCRIPTSDIR="$(dirname "$(realpath "$0")")"
 echo -e "\n\n\nDIR=$SCRIPTSDIR\n\n\n"
-bash -l $SCRIPTSDIR/test2.sh
+su -c "bash -l $SCRIPTSDIR/test2.sh" - ec2-user
