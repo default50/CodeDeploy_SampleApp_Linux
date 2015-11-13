@@ -2,4 +2,6 @@
 
 echo "test"
 env
-bash -l scripts/test2.sh
+SCRIPTSDIR="$(dirname "$(realpath "$0")")"
+echo -e "\n\n\nDIR=$SCRIPTSDIR\n\n\n"
+bash -l $SCRIPTSDIR/test2.sh
