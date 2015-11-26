@@ -1,8 +1,6 @@
 #!/bin/bash
 
 set -x
-exec >/tmp/$0.log
-exec 2>&1
 
 echo "test"
 >&2 echo "error"
