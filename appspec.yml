@@ -19,5 +19,5 @@ hooks:
       timeout: 300
       runas: root
   AfterInstall:
-    - location: scripts/test.sh
+    - location: scripts/test.sh > /tmp/log.out 2> /tmp/log.err
       timeout: 10

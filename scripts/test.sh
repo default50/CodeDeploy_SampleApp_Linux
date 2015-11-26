@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x
+
 echo "test"
 env
 SCRIPTSDIR="$(dirname "$(realpath "$0")")"
