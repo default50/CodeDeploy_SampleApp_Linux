@@ -1,3 +1,9 @@
 #!/bin/bash
-service httpd start
 
+which yum >/dev/null 2>/dev/null && {
+  service httpd start
+}
+
+which apt-get >/dev/null 2>/dev/null && {
+  service apache2 start
+}

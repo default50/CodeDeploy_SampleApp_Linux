@@ -1,3 +1,10 @@
 #!/bin/bash
-yum update -y
 
+which yum >/dev/null 2>/dev/null && {
+  yum update -y
+}
+
+which apt-get >/dev/null 2>/dev/null && {
+  apt-get update
+  apt-get -y updgrade
+}

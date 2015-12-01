@@ -1,3 +1,10 @@
 #!/bin/bash
-yum install -y httpd
-chkconfig httpd on
+
+which yum >/dev/null 2>/dev/null && {
+  yum install -y httpd
+  chkconfig httpd on
+}
+
+which apt-get >/dev/null 2>/dev/null && {
+  apt-get install apache2
+}
