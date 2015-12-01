@@ -8,4 +8,5 @@ which yum >/dev/null 2>/dev/null && {
 which apt-get >/dev/null 2>/dev/null && {
   apt-get update
   apt-get -y upgrade
+  exit 0
 }
