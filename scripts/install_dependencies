@@ -3,6 +3,7 @@
 which yum >/dev/null 2>/dev/null && {
   yum install -y httpd
   chkconfig httpd on
+  exit 0
 }
 
 which apt-get >/dev/null 2>/dev/null && {
