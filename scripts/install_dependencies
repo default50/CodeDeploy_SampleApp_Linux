@@ -7,6 +7,6 @@ which yum >/dev/null 2>/dev/null && {
 }
 
 which apt-get >/dev/null 2>/dev/null && {
-  apt-get install apache2
+  apt-get -y install apache2
   exit 0
 }
