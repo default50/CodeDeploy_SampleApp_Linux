@@ -2,6 +2,8 @@
 
 #set -x
 
-echo "env test"
+echo "Sleeping..."
 
-env
+sleep 300
+
+echo "Waking up!"
