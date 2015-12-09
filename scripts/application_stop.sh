@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if which yum &>/dev/null; then
-  echo "yum"
+  service httpd stop
 elif which apt-get &>/dev/null; then
-  echo "apt-get"
+  service apache2 stop
 fi

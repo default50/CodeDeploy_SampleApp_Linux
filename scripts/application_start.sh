@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if which yum &>/dev/null; then
-  echo "yum"
+  service httpd start
 elif which apt-get &>/dev/null; then
-  echo "apt-get"
+  service apache2 start
 fi
