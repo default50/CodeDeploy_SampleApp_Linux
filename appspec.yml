@@ -5,6 +5,7 @@ files:
     destination: /var/www/html/
 hooks:
   ApplicationStop:
+    - location: scripts/deregister_from_elb.sh
     - location: scripts/application_stop.sh
       timeout: 60
       runas: root
@@ -19,3 +20,4 @@ hooks:
     - location: scripts/application_start.sh
       timeout: 60
       runas: root
+    - location: scripts/register_from_elb.sh
