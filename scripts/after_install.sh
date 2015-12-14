@@ -6,4 +6,6 @@ elif which apt-get &>/dev/null; then
   echo "apt-get"
 fi
 
-sleep 300
+echo -n "Sleeping..."
+sleep 120
+echo " Done!"
