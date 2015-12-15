@@ -274,7 +274,7 @@ autoscaling_unset_protected() {
     local instance_id=$1
     local asg_name=$2
 
-    msg "Checking if this instance has already been moved out of Standby state"
+    msg "Checking if this instance has already been put out of Protected From Scale In"
     local instance_protected=$(get_instance_protected_state_asg $instance_id)
     if [ $? != 0 ]; then
         msg "Unable to get this instance's protection state."

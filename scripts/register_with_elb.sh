@@ -32,7 +32,7 @@ asg=$(autoscaling_group_name $INSTANCE_ID)
 if [ $? == 0 -a -n "$asg" ]; then
     msg "Found AutoScaling group for instance $INSTANCE_ID: $asg"
 
-    msg "Checking that installed CLI version is at least at version required for AutoScaling Standby"
+    msg "Checking that installed CLI version is at least at version required for AutoScaling Standby and Instance Protection"
     check_cli_version
     if [ $? != 0 ]; then
         error_exit "CLI must be at least version ${MIN_CLI_X}.${MIN_CLI_Y}.${MIN_CLI_Z} to work with AutoScaling Standby"
