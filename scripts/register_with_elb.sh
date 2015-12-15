@@ -44,7 +44,6 @@ if [ $? == 0 -a -n "$asg" ]; then
         error_exit "Failed to move instance out of standby"
     else
         msg "Instance is no longer in Standby"
-        exit 0
     fi
 
     msg "Attempting to remove instance from Protected From Scale In"
