@@ -46,6 +46,15 @@ if [ $? == 0 -a -n "$asg" ]; then
         msg "Instance is no longer in Standby"
         exit 0
     fi
+
+    msg "Attempting to remove instance from Protected From Scale In"
+    autoscaling_unset_protected $INSTANCE_ID $asg
+    if [ $? != 0 ]; then
+        error_exit "Failed to remove instance from Protected From Scale In"
+    else
+        msg "Instance is not protected"
+        exit 0
+    fi
 fi
 
 msg "Instance is not part of an ASG, continuing..."

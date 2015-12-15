@@ -79,10 +79,10 @@ autoscaling_group_name() {
 
 # Usage: autoscaling_set_protected <EC2 instance ID> <ASG name>
 #
-#   Move <EC2 instance ID> into the Standby state in AutoScaling group <ASG name>. Doing so will
-#   pull it out of any Elastic Load Balancer that might be in front of the group.
+#   Put <EC2 instance ID> as Protected From Scale In in AutoScaling group <ASG name>. Doing so will
+#   prevent it from being terminated.
 #
-#   Returns 0 if the instance was successfully moved to standby. Non-zero otherwise.
+#   Returns 0 if the instance was successfully protected. Non-zero otherwise.
 autoscaling_set_protected() {
     local instance_id=$1
     local asg_name=$2
@@ -119,83 +119,6 @@ autoscaling_set_protected() {
 
     return 0
 }
-
-# Usage: autoscaling_enter_standby <EC2 instance ID> <ASG name>
-#
-#   Move <EC2 instance ID> into the Standby state in AutoScaling group <ASG name>. Doing so will
-#   pull it out of any Elastic Load Balancer that might be in front of the group.
-#
-#   Returns 0 if the instance was successfully moved to standby. Non-zero otherwise.
-autoscaling_enter_standby() {
-    local instance_id=$1
-    local asg_name=$2
-
-    msg "Checking if this instance has already been moved in the Standby state"
-    local instance_state=$(get_instance_state_asg $instance_id)
-    if [ $? != 0 ]; then
-        msg "Unable to get this instance's lifecycle state."
-        return 1
-    fi
-
-    if [ "$instance_state" == "Standby" ]; then
-        msg "Instance is already in Standby; nothing to do."
-        return 0
-    fi
-
-    if [ "$instance_state" == "Pending:Wait" ]; then
-        msg "Instance is Pending:Wait; nothing to do."
-        return 0
-    fi
-
-    msg "Checking to see if ASG $asg_name will let us decrease desired capacity"
-    local min_desired=$($AWS_CLI autoscaling describe-auto-scaling-groups \
-        --auto-scaling-group-name $asg_name \
-        --query 'AutoScalingGroups[0].[MinSize, DesiredCapacity]' \
-        --output text)
-
-    local min_cap=$(echo $min_desired | awk '{print $1}')
-    local desired_cap=$(echo $min_desired | awk '{print $2}')
-
-    if [ -z "$min_cap" -o -z "$desired_cap" ]; then
-        msg "Unable to determine minimum and desired capacity for ASG $asg_name."
-        msg "Attempting to put this instance into standby regardless."
-    elif [ $min_cap == $desired_cap -a $min_cap -gt 0 ]; then
-        local new_min=$(($min_cap - 1))
-        msg "Decrementing ASG $asg_name's minimum size to $new_min"
-        msg $($AWS_CLI autoscaling update-auto-scaling-group \
-            --auto-scaling-group-name $asg_name \
-            --min-size $new_min)
-        if [ $? != 0 ]; then
-            msg "Failed to reduce ASG $asg_name's minimum size to $new_min. Cannot put this instance into Standby."
-            return 1
-        else
-            msg "ASG $asg_name's minimum size has been decremented, creating flag file /tmp/asgmindecremented"
-            # Create a "flag" file to denote that the ASG min has been decremented
-            touch /tmp/asgmindecremented
-        fi
-    fi
-
-    msg "Putting instance $instance_id into Standby"
-    $AWS_CLI autoscaling enter-standby \
-        --instance-ids $instance_id \
-        --auto-scaling-group-name $asg_name \
-        --should-decrement-desired-capacity
-    if [ $? != 0 ]; then
-        msg "Failed to put instance $instance_id into Standby for ASG $asg_name."
-        return 1
-    fi
-
-    msg "Waiting for move to Standby to finish"
-    wait_for_state "autoscaling" $instance_id "Standby"
-    if [ $? != 0 ]; then
-        local wait_timeout=$(($WAITER_INTERVAL * $WAITER_ATTEMPTS))
-        msg "Instance $instance_id did not make it to standby after $wait_timeout seconds"
-        return 1
-    fi
-
-    return 0
-}
-
 
 # Usage: autoscaling_enter_standby <EC2 instance ID> <ASG name>
 #
@@ -340,6 +263,47 @@ autoscaling_exit_standby() {
         msg "Auto scaling group was not decremented previously, not incrementing min value"
     fi
 
+    return 0
+}
+
+# Usage: autoscaling_unset_protected <EC2 instance ID> <ASG name>
+#
+#   Attempts to remove instance <EC2 instance ID> as Protected From Scale In. Returns 0 if
+#   successful.
+autoscaling_unset_protected() {
+    local instance_id=$1
+    local asg_name=$2
+
+    msg "Checking if this instance has already been moved out of Standby state"
+    local instance_protected=$(get_instance_protected_state_asg $instance_id)
+    if [ $? != 0 ]; then
+        msg "Unable to get this instance's protection state."
+        return 1
+    fi
+
+    if [ "$instance_protected" == "False" ]; then
+        msg "Instance is already not Protected From Scale In ; nothing to do."
+        return 0
+    fi
+
+    msg "Putting instance $instance_id as not Protected From Scale In"
+    $AWS_CLI set-instance-protection \
+        --instance-ids $instance_id \
+        --auto-scaling-group-name $asg_name \
+        --no-protected-from-scale-in
+    if [ $? != 0 ]; then
+        msg "Failed to put instance $instance_id as not Protected From Scale In."
+        return 1
+    fi
+    
+    msg "Waiting for unprotection to finish"
+    wait_for_state "autoscaling_protected" $instance_id "False"
+    if [ $? != 0 ]; then
+        local wait_timeout=$(($WAITER_INTERVAL * $WAITER_ATTEMPTS))
+        msg "Instance $instance_id could not be unprotected after $wait_timeout seconds"
+        return 1
+    fi
+   
     return 0
 }
 
