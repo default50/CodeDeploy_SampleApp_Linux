@@ -38,6 +38,15 @@ if [ $? == 0 -a -n "$asg" ]; then
         error_exit "CLI must be at least version ${MIN_CLI_X}.${MIN_CLI_Y}.${MIN_CLI_Z} to work with AutoScaling Standby"
     fi
 
+    msg "Attempting to put instance into Protected From Scale In"
+    autoscaling_set_protected $INSTANCE_ID $asg
+    if [ $? != 0 ]; then
+        error_exit "Failed to put instance into Protected From Scale In"
+    else
+        msg "Instance is protected"
+        exit 0
+    fi
+
     msg "Attempting to put instance into Standby"
     autoscaling_enter_standby $INSTANCE_ID $asg
     if [ $? != 0 ]; then
