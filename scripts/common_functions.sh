@@ -87,7 +87,7 @@ autoscaling_set_protected() {
     local instance_id=$1
     local asg_name=$2
 
-    msg "Checking if this instance has already been moved in the Standby state"
+    msg "Checking if this instance has already been put in Protected From Scale In"
     local instance_protected=$(get_instance_protected_state_asg $instance_id)
     if [ $? != 0 ]; then
         msg "Unable to get this instance's protection state."
@@ -100,7 +100,7 @@ autoscaling_set_protected() {
     fi
 
     msg "Putting instance $instance_id as Protected From Scale In"
-    $AWS_CLI set-instance-protection \
+    $AWS_CLI autoscaling set-instance-protection \
         --instance-ids $instance_id \
         --auto-scaling-group-name $asg_name \
         --protected-from-scale-in
@@ -287,7 +287,7 @@ autoscaling_unset_protected() {
     fi
 
     msg "Putting instance $instance_id as not Protected From Scale In"
-    $AWS_CLI set-instance-protection \
+    $AWS_CLI autoscaling set-instance-protection \
         --instance-ids $instance_id \
         --auto-scaling-group-name $asg_name \
         --no-protected-from-scale-in
