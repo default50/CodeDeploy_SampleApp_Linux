@@ -11,7 +11,6 @@ hooks:
       timeout: 60
       runas: root
   BeforeInstall:
-    - location: scripts/protect_asg.sh
     - location: scripts/before_install.sh
       timeout: 300
       runas: root
