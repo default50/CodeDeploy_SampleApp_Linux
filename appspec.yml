@@ -5,11 +5,13 @@ files:
     destination: /var/www/html/
 hooks:
   ApplicationStop:
+    - location: scripts/protect_asg.sh
     - location: scripts/deregister_from_elb.sh
     - location: scripts/application_stop.sh
       timeout: 60
       runas: root
   BeforeInstall:
+    - location: scripts/protect_asg.sh
     - location: scripts/before_install.sh
       timeout: 300
       runas: root
@@ -21,3 +23,4 @@ hooks:
       timeout: 60
       runas: root
     - location: scripts/register_with_elb.sh
+    - location: scripts/unprotect_asg.sh
