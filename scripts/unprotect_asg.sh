@@ -31,19 +31,19 @@ msg "Checking if instance $INSTANCE_ID is part of an AutoScaling group"
 asg=$(autoscaling_group_name $INSTANCE_ID)
 if [ $? == 0 -a -n "$asg" ]; then
     msg "Found AutoScaling group for instance $INSTANCE_ID: $asg"
-    
+
     msg "Checking that installed CLI version is at least at version required for AutoScaling Standby and Instance Protection"
     check_cli_version
     if [ $? != 0 ]; then
         error_exit "CLI must be at least version ${MIN_CLI_X}.${MIN_CLI_Y}.${MIN_CLI_Z} to work with AutoScaling Standby"
     fi
 
-    msg "Attempting to put instance into Protected From Scale In"
-    autoscaling_set_protected $INSTANCE_ID $asg
+    msg "Attempting to remove instance from Protected From Scale In"
+    autoscaling_unset_protected $INSTANCE_ID $asg
     if [ $? != 0 ]; then
-        error_exit "Failed to put instance into Protected From Scale In"
+        error_exit "Failed to remove instance from Protected From Scale In"
     else
-        msg "Instance is protected"
+        msg "Instance is not protected"
         exit 0
     fi
 fi
