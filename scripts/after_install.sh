@@ -7,5 +7,5 @@ elif which apt-get &>/dev/null; then
 fi
 
 echo "Sleeping..."
-sleep 120
+#sleep 120
 echo "...Done!"
