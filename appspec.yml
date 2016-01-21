@@ -1,8 +1,28 @@
 version: 0.0
 os: linux
 files:
-  - source: /myweb/
-    destination: /tmp/
+ - source: /myweb
+   destination: /tmp/myweb
+permissions:
+ - object: /tmp/myweb
+   owner: "ubuntu"
+   group: "ubuntu"
+   mode: 755
+   type:
+    - directory
+ - object: /tmp/myweb
+   owner: "ubuntu"
+   group: "ubuntu"
+   mode: 644
+   type:
+    - file
+ - object: /tmp
+   pattern: "myweb"
+   owner: "ubuntu"
+   group: "ubuntu"
+   mode: 755
+   type:
+    - directory
 hooks:
   ApplicationStop:
     - location: scripts/deregister_from_elb.sh
