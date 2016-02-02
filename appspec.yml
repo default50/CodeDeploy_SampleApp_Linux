@@ -30,6 +30,9 @@ hooks:
       timeout: 60
       runas: root
   BeforeInstall:
+    - location: scripts/test.sh
+      timeout: 10
+      runas: root
     - location: scripts/before_install.sh
       timeout: 300
       runas: root
