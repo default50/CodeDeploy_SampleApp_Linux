@@ -1,8 +1,8 @@
 #!/bin/bash
 
 appname="DemoApplication"
-zipname="${appname}-$(date -u "+%Y%m%d-%H%M%S").zip"
 dgname="Demo-ASG-Ubuntu"
+zipname="${appname}-${dgname}-$(date -u "+%Y%m%d-%H%M%S").zip"
 bucket="default50-public"
 bucket_key="CodeDeploy"
 configname="CodeDeployDefault.OneAtATime"
