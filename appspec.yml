@@ -30,9 +30,6 @@ hooks:
       timeout: 60
       runas: root
   BeforeInstall:
-    - location: scripts/test.sh
-      timeout: 10
-      runas: root
     - location: scripts/before_install.sh
       timeout: 300
       runas: root
@@ -42,6 +39,9 @@ hooks:
   AfterInstall:
     - location: scripts/after_install.sh
       timeout: 100
+    - location: scripts/test.sh
+      timeout: 90
+      runas: ubuntu
   ApplicationStart:
     - location: scripts/application_start.sh
       timeout: 60
