@@ -1,5 +1,7 @@
 #! /bin/bash
 
-echo "TEST: I will now sleep 60s to pretend I'm doing something useful!"
-sleep 60
+time=10
+
+echo "TEST: I will now sleep ${time}s to pretend I'm doing something useful!"
+sleep ${time}
 echo "Done sleeping, resuming!"
