@@ -101,6 +101,25 @@ autoscaling_enter_standby() {
         return 0
     fi
 
+    msg "Checking to see if ASG ${asg_name} had AZRebalance process suspended previously"
+    local azrebalance_suspended=$($AWS_CLI autoscaling describe-auto-scaling-groups \
+        --auto-scaling-group-name "${asg_name}" \
+        --query 'AutoScalingGroups[].SuspendedProcesses' \
+        --output text | grep -c 'AZRebalance')
+    if [ $azrebalance_suspended -eq 1 ]; then
+        msg "ASG ${asg_name} had AZRebalance suspended, creating flag file /tmp/azrebalanced"
+        # Create a "flag" file to denote that the ASG had AZRebalance enabled
+        touch /tmp/azrebalanced
+    else
+        msg "ASG ${asg_name} didn't have AZRebalance suspended, suspending"
+        $AWS_CLI autoscaling suspend-processes \
+            --auto-scaling-group-name "${asg_name}" \
+            --scaling-processes AZRebalance
+        if [ $? != 0 ]; then
+            msg "Failed to suspend the AZRebalance process for ASG ${asg_name}, but continuing regardless. This may cause issues."
+        fi
+    fi
+
     msg "Checking to see if ASG ${asg_name} will let us decrease desired capacity"
     local min_desired=$($AWS_CLI autoscaling describe-auto-scaling-groups \
         --auto-scaling-group-name "${asg_name}" \
@@ -217,6 +236,20 @@ autoscaling_exit_standby() {
         msg "Auto scaling group was not decremented previously, not incrementing min value"
     fi
 
+    if [ -a /tmp/azrebalanced ]; then
+        msg "ASG ${asg_name} had AZRebalance suspended previously, leaving it suspended"
+        msg "Removing /tmp/azrebalanced flag file"
+        rm -f /tmp/azrebalanced
+    else
+        msg "Resuming AZRebalance process for ASG ${asg_name}"
+        $AWS_CLI autoscaling resume-processes \
+            --auto-scaling-group-name "${asg_name}" \
+            --scaling-processes AZRebalance
+        if [ $? != 0 ]; then
+            msg "Failed to resume the AZRebalance process for ASG ${asg_name}, but continuing regardless. This may cause issues."
+        fi
+    fi
+
     return 0
 }
 
@@ -242,14 +275,38 @@ get_instance_state_asg() {
 
 reset_waiter_timeout() {
     local elb=$1
+    local state_name=$2
 
-    local health_check_values=$($AWS_CLI elb describe-load-balancers \
-        --load-balancer-name $elb \
-        --query 'LoadBalancerDescriptions[0].HealthCheck.[HealthyThreshold, Interval]' \
-        --output text)
+    if [ "$state_name" == "InService" ]; then
 
-    WAITER_ATTEMPTS=$(echo $health_check_values | awk '{print $1}')
-    WAITER_INTERVAL=$(echo $health_check_values | awk '{print $2}')
+        # Wait for a health check to succeed
+        local timeout=$($AWS_CLI elb describe-load-balancers \
+            --load-balancer-name $elb \
+            --query 'LoadBalancerDescriptions[0].HealthCheck.Timeout')
+
+    elif [ "$state_name" == "OutOfService" ]; then
+
+        # If connection draining is enabled, wait for connections to drain
+        local draining_values=$($AWS_CLI elb describe-load-balancer-attributes \
+            --load-balancer-name $elb \
+            --query 'LoadBalancerAttributes.ConnectionDraining.[Enabled,Timeout]' \
+            --output text)
+        local draining_enabled=$(echo $draining_values | awk '{print $1}')
+        local timeout=$(echo $draining_values | awk '{print $2}')
+
+        if [ "$draining_enabled" != "True" ]; then
+            timeout=0
+        fi
+
+    else
+        msg "Unknown state name, '$state_name'";
+        return 1;
+    fi
+
+    # Base register/deregister action may take up to about 30 seconds
+    timeout=$((timeout + 30))
+
+    WAITER_ATTEMPTS=$((timeout / WAITER_INTERVAL))
 }
 
 # Usage: wait_for_state <service> <EC2 instance ID> <state name> [ELB name]
@@ -257,7 +314,7 @@ reset_waiter_timeout() {
 #    Waits for the state of <EC2 instance ID> to be in <state> as seen by <service>. Returns 0 if
 #    it successfully made it to that state; non-zero if not. By default, checks $WAITER_ATTEMPTS
 #    times, every $WAITER_INTERVAL seconds. If giving an [ELB name] to check under, these are reset
-#    to that ELB's HealthThreshold and Interval values.
+#    to that ELB's timeout values.
 wait_for_state() {
     local service=$1
     local instance_id=$2
@@ -267,7 +324,10 @@ wait_for_state() {
     local instance_state_cmd
     if [ "$service" == "elb" ]; then
         instance_state_cmd="get_instance_health_elb $instance_id $elb"
-        reset_waiter_timeout $elb
+        reset_waiter_timeout $elb $state_name
+        if [ $? != 0 ]; then
+            error_exit "Failed resetting waiter timeout for $elb"
+        fi
     elif [ "$service" == "autoscaling" ]; then
         instance_state_cmd="get_instance_state_asg $instance_id"
     else
