@@ -15,7 +15,7 @@
 
 # ELB_LIST defines which Elastic Load Balancers this instance should be part of.
 # The elements in ELB_LIST should be seperated by space.
-ELB_LIST=""
+ELB_LIST="codedeploy"
 
 # Under normal circumstances, you shouldn't need to change anything below this line.
 # -----------------------------------------------------------------------------
