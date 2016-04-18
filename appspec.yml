@@ -5,21 +5,15 @@ files:
    destination: /tmp/myweb
 permissions:
  - object: /tmp/myweb
-   owner: "ubuntu"
-   group: "ubuntu"
    mode: 755
    type:
     - directory
  - object: /tmp/myweb
-   owner: "ubuntu"
-   group: "ubuntu"
    mode: 644
    type:
     - file
  - object: /tmp
    pattern: "myweb"
-   owner: "ubuntu"
-   group: "ubuntu"
    mode: 755
    type:
     - directory
