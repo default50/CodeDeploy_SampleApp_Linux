@@ -35,7 +35,6 @@ hooks:
       timeout: 100
     - location: scripts/test.sh
       timeout: 90
-      runas: ubuntu
   ApplicationStart:
     - location: scripts/application_start.sh
       timeout: 60
