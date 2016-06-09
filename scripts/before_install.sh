@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Install Apache on Amazon Linux or Ubuntu (only if not previously installed)
 if which yum &>/dev/null; then
   yum update -y
   yum install -y httpd
@@ -14,3 +15,6 @@ elif which apt-get &>/dev/null; then
     echo "apache2 already installed, skipping!"
   fi
 fi
+
+# Make sure /tmp/myweb doesn't exist so that the test in AfterInstall is really valid
+[ -d /tmp/myweb ] && rm -Rf /tmp/myweb
