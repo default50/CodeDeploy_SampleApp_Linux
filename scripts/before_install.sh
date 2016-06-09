@@ -17,4 +17,6 @@ elif which apt-get &>/dev/null; then
 fi
 
 # Make sure /tmp/myweb doesn't exist so that the test in AfterInstall is really valid
-[ -d /tmp/myweb ] && rm -Rf /tmp/myweb
+if [ -d /tmp/myweb ]; then
+  rm -Rf /tmp/myweb
+fi
