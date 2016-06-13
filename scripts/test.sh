@@ -1,6 +1,6 @@
 #! /bin/bash
 
-time=10
+time=3
 
 echo "TEST: I will now sleep ${time}s to pretend I'm doing something useful!"
 sleep ${time}
