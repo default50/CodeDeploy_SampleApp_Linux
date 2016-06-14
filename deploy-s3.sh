@@ -1,6 +1,7 @@
 #!/bin/bash
 
 appname="DemoApplication"
+#dgname="Demo-ASG-Ubuntu"
 dgname="Demo-Tag-Ubuntu"
 zipname="${appname}-${dgname}-$(date -u "+%Y%m%d-%H%M%S").zip"
 bucket="default50-public"
