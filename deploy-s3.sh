@@ -6,11 +6,11 @@ dgname="Demo-Tag-Ubuntu"
 zipname="${appname}-${dgname}-$(date -u "+%Y%m%d-%H%M%S").zip"
 bucket="default50-public"
 bucket_key="CodeDeploy"
-configname="CodeDeployDefault.AllAtOnce"
-#configname="CodeDeployDefault.OneAtATime"
+#configname="CodeDeployDefault.AllAtOnce"
+configname="CodeDeployDefault.OneAtATime"
 profile="code"
 
-if [ "x${1}" = "x-i" ]; then
+if [ "${1}" = "-i" ]; then
   IGNORE="--ignore-application-stop-failures"
 fi
 
