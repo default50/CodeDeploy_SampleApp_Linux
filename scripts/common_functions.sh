@@ -18,7 +18,7 @@
 # Set to "_all_" to automatically find all load balancers the instance is registered to.
 # Set to "_any_" will work as "_all_" but will not fail if instance is not attached to
 # any ASG or ELB, giving flexibility.
-ELB_LIST="_any_"
+ELB_LIST="codedeploy"
 
 # Under normal circumstances, you shouldn't need to change anything below this line.
 # -----------------------------------------------------------------------------
